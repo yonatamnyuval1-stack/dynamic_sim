@@ -8,6 +8,7 @@
         font-family: Arial, sans-serif;
         background: #efefef;
         margin: 20px;
+        text-align: center;
     }
     h1 {
         font-size: 26px;
@@ -19,7 +20,7 @@
     canvas{
         background: white;
         border: 1px solid #888;
-        margin-top: 8px;
+        margin: 8px auto 0 auto;
         display: block;
     }
     button{
@@ -36,12 +37,27 @@
 <canvas id="c" width="820" height="420"></canvas>
 <br>
 <button onclick="restart()">start over</button>
+<button id="pauseBtn" onclick="pause()">pause</button>
+<button onclick="faster()">faster</button>
+<button onclick="slower()">slower</button>
+<button onclick="more()">more</button>
+<button onclick="fewer()">fewer</button>
+<button onclick="bigger()">bigger swing</button>
+<button onclick="smaller()">smaller swing</button>
+<button onclick="nextColor()">another color</button>
 <script>
 let g = 9.8;
 let backTogether = 30;
 let howMany = 12;
 let maxAngle = 0.55;
 let scale = 260;
+let speed = 1
+let paused = false
+let passed = 0
+let last = Date.now()
+let ballColor = "red"
+let colors = ["red","blue","black","green"]
+let colorNum=0
 let canvas = document.getElementById("c");
 let ctx = canvas.getContext("2d");
 let pendulums = [];
@@ -59,10 +75,78 @@ function make_Pendulums(){
 }
 
 function restart(){
-    start = Date.now()
+    passed = 0
+    last = Date.now()
+    paused = false
+    document.getElementById("pauseBtn").innerText = "pause"
+}
+function pause(){
+    if(paused == false){
+        paused=true
+        document.getElementById("pauseBtn").innerText = "play"
+    } else{
+        paused = false
+        last = Date.now()
+        document.getElementById("pauseBtn").innerText = "pause"
+    }
+}
+
+function faster(){
+    speed = speed+0.5
+    if(speed>4){
+        speed=4
+    }
+}
+function slower(){
+    speed=speed-0.5
+    if(speed<0.5){
+        speed=0.5
+    }
+}
+
+function more(){
+    if(howMany<18){
+        howMany=howMany+1
+        make_Pendulums()
+    }
+}
+
+function fewer(){
+    if (howMany>4) {
+        howMany=howMany-1
+        make_Pendulums()
+    }
+}
+
+function bigger(){
+    maxAngle = maxAngle+0.1
+    if(maxAngle>1){
+        maxAngle=1
+    }
+}
+
+function smaller() {
+    maxAngle = maxAngle-0.1
+    if(maxAngle<0.2){
+        maxAngle=0.2
+    }
+}
+
+function nextColor(){
+    colorNum = colorNum+1
+    if(colorNum>=colors.length){
+        colorNum=0
+    }
+    ballColor = colors[colorNum]
 }
 function draw() {
-    let t = (Date.now() - start) / 1000;
+    let now = Date.now()
+    let dt = (now-last) / 1000
+    last = now
+    if(paused==false){
+        passed = passed + dt*speed
+    }
+    let t = passed
     ctx.clearRect(0,0,canvas.width, canvas.height);
     ctx.fillStyle = "#333";
     ctx.fillRect(30,24,canvas.width-60,6);
@@ -84,7 +168,7 @@ function draw() {
         ctx.stroke();
         ctx.beginPath();
         ctx.arc(x,y,8,0,Math.PI*2);
-        ctx.fillStyle = "red";
+        ctx.fillStyle = ballColor;
         ctx.fill();
     }
     document.getElementById("sec").innerText = Math.floor(t);
