@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pendulum wave</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #efefef;
+        margin: 20px;
+    }
+    h1 {
+        font-size: 26px;
+        margin-bottom: 0;
+    }
+    p{
+        margin-top: 8px;
+    }
+    canvas{
+        background: white;
+        border: 1px solid #888;
+        margin-top: 8px;
+        display: block;
+    }
+    button{
+        margin-top: 10px;
+        font-size: 15px;
+        padding: 5px 10px;
+    }
+</style>
+</head>
+<body>
+<h1>pendulum wave</h1>
+<p>a few pendulums, each one a bit longer than the last. they spread out, then line up again after about half a minute</p>
+<p>time: <span id="sec">0</span> seconds</p>
+<canvas id="c" width="820" height="420"></canvas>
+<br>
+<button onclick="restart()">start over</button>
+<script>
+let g = 9.8;
+let backTogether = 30;
+let howMany = 12;
+let maxAngle = 0.55;
+let scale = 260;
+let canvas = document.getElementById("c");
+let ctx = canvas.getContext("2d");
+let pendulums = [];
+let start = Date.now();
+
+function make_Pendulums(){
+    pendulums = [];
+    for(let i = 0; i<howMany; i++) {
+        let swings = 15+i;
+        let len = g*Math.pow(backTogether / (2*Math.PI*swings),2);
+        pendulums.push({
+            len:len
+        });
+    }
+}
+
+function restart(){
+    start = Date.now()
+}
+function draw() {
+    let t = (Date.now() - start) / 1000;
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    ctx.fillStyle = "#333";
+    ctx.fillRect(30,24,canvas.width-60,6);
+    let gap = (canvas.width-40) / howMany;
+    for (let i =0;i < pendulums.length; i++){
+        let p = pendulums[i];
+        let omega = Math.sqrt(g / p.len)
+        let angle = Math.cos(omega*t)*maxAngle;
+        let pix = p.len*scale;
+        let x0 = 20+gap *i+gap / 2;
+        let y0 = 30;
+        let x = x0 +Math.sin(angle)*pix
+        let y = y0 + Math.cos(angle)*pix
+        ctx.beginPath();
+        ctx.moveTo(x0,y0);
+        ctx.lineTo(x,y);
+        ctx.strokeStyle = "#222"
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x,y,8,0,Math.PI*2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+    }
+    document.getElementById("sec").innerText = Math.floor(t);
+    requestAnimationFrame(draw);
+}
+make_Pendulums()
+draw()
+</script>
+</body>
+</html>
